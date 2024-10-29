@@ -3,8 +3,8 @@ import csv
 from openpyxl import load_workbook 
 from tqdm import tqdm
 
-api_url = 'http://localhost:11434/api/generate'
-model_name = 'qwen2:72b'
+api_url = 'http://localhost:8800/v1/chat/completions'
+model_name = '/models/Qwen2.5-72B-Instruct'
 data_name = 'text2sql.xlsx'
 sheet_name = 'Sheet1'
 output_name = 'newq.csv'
@@ -43,20 +43,19 @@ datas = []
 
 for row in tqdm(sheet.iter_rows(min_row=2, values_only=True)):
     prompt = PROMPT.format(table_info=row[1], question=row[2], sql=row[3])
-    print('prompt:', prompt)
+
+    messages = [
+        {'role': 'system', 'content': 'You are a helpful assistant.'},
+        {'role': 'user', 'content': prompt}
+    ]
 
     request_data = {
         'model': model_name,
-        'prompt': prompt,
-        'stream': False,
-        'options': {
-            'temprature': 0.8
-        }
+        'messages': messages,
     }
 
     response = requests.post(api_url, json=request_data)
-    output = response.json()['response']
-    print('output:', output)
+    output = response.json()['choices'][0]['message']['content']
 
     o = [r for r in row]
     o.append(row[2])
@@ -73,6 +72,8 @@ for row in tqdm(sheet.iter_rows(min_row=2, values_only=True)):
         o.append(row[3])
         datas.append(o)
 
+    print('prompt:', prompt)
+    print('output:', output)
     print('------')
 
 with open(output_name, 'w', encoding='UTF8') as f:

@@ -3,8 +3,8 @@ import csv
 import random
 from tqdm import tqdm
 
-api_url = 'http://localhost:11434/api/generate'
-model_name = 'qwen2:72b'
+api_url = 'http://localhost:8800/v1/chat/completions'
+model_name = '/models/Qwen2.5-72B-Instruct'
 data_name = 'newq.csv'
 output_name = 'newqs.csv'
 num = 20
@@ -12,30 +12,28 @@ num = 20
 loc = ['绍兴市', '越城区', '柯桥区', '上虞区', '新昌县', '诸暨市', '嵊州市']
 t = [
     '昨天', 
-    '最近七天/一周', 
-    '最近三十天/一个月', 
-    '上个月', 
-    '今年', 
-    '今年某月',
-    '今年第几季度',
-    '去年',
-    '去年某月', 
-    '去年第几季度',
-    '具体到某年',
-    '具体到某年某月'
-]
-ts = [
     "DATE_FORMAT(dt, '%Y-%m-%d') = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d')",
+    '最近七天/一周', 
     "dt <= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d') and dt >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 7 DAY), '%Y-%m-%d')",
+    '最近三十天/一个月', 
     "dt <= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '%Y-%m-%d') and dt >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 30 DAY), '%Y-%m-%d')",
+    '上个月', 
     "DATE_FORMAT(dt, '%Y-%m') = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m')",
+    '今年', 
     "YEAR(dt) = YEAR(CURDATE())",
+    '今年某月',
     "YEAR(dt) = YEAR(CURDATE()) AND MONTH(dt) = x",
+    '今年第几季度',
     "YEAR(dt) = YEAR(CURDATE()) AND QUARTER(dt) = x",
+    '去年',
     "YEAR(dt) = YEAR(CURDATE()) - 1", 
+    '去年某月', 
     "YEAR(dt) = YEAR(CURDATE()) - 1 AND MONTH(dt) = x", 
+    '去年第几季度',
     "YEAR(dt) = YEAR(CURDATE()) - 1 AND QUARTER(dt) = x",
+    '具体到某年',
     "DATE_FORMAT(dt, '%Y') = 'xxxx'",
+    '具体到某年某月', 
     "DATE_FORMAT(dt, '%Y-%m') = 'xxxx-xx'"
 ]
 
@@ -64,22 +62,21 @@ with open(data_name) as f:
     for row in tqdm(csv_reader, desc='csv_reader'):
         for n in tqdm(range(num), desc='num'):
             r1 = random.randint(0, len(loc)-1)
-            r2 = random.randint(0, len(t)-1)
-            prompt = PROMPT.format(table_info=row[1], question=row[-2], sql=row[-1], rloc=loc[r1], rt=t[r2], rts=ts[r2])
-            print('prompt:', prompt)
+            r2 = random.randint(0, len(t)//2-1)
+            prompt = PROMPT.format(table_info=row[1], question=row[-2], sql=row[-1], rloc=loc[r1], rt=t[r2*2], rts=t[r2*2+1])
+
+            messages = [
+                {'role': 'system', 'content': 'You are a helpful assistant.'},
+                {'role': 'user', 'content': prompt}
+            ]
 
             request_data = {
                 'model': model_name,
-                'prompt': prompt,
-                'stream': False,
-                'options': {
-                    'temprature': 0.8
-                }
+                'messages': messages,
             }
 
             response = requests.post(api_url, json=request_data)
-            output = response.json()['response']
-            print('output:', output)
+            output = response.json()['choices'][0]['message']['content']
 
             q2 = output.split('```question')[-1].split('```')[0]
             while q2 and (q2[0] == '\n' or q2[0] == ' '):
@@ -97,6 +94,9 @@ with open(data_name) as f:
             row2[-2] = q2
             row2[-1] = s2
             datas.append(row2)
+
+            print('prompt:', prompt)
+            print('output:', output)
             print('------')
 
     print('------')

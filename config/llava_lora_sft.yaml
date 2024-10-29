@@ -5,8 +5,8 @@ model_name_or_path: /file/tian/models/llava-v1.6-vicuna-7b-hf
 dataset: llavadata
 dataset_dir: config
 template: llava_next
-cutoff_len: 1024
-max_samples: 10000
+cutoff_len: 4096
+max_samples: 120000
 overwrite_cache: true
 preprocessing_num_workers: 16
 
