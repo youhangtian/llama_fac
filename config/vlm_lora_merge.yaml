@@ -1,9 +1,9 @@
 ### Note: DO NOT use quantized model or quantization_bit when merging lora adapters
 
 ### model
-model_name_or_path: /file/tian/models/llava-v1.6-vicuna-7b-hf
+model_name_or_path: /file/tian/models/Qwen2-VL-7B-Instruct
 adapter_name_or_path: sft_output/adapter
-template: llava_next
+template: qwen2_vl
 finetuning_type: lora
 
 ### export

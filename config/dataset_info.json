@@ -8,8 +8,8 @@
       "history": "history"
     }
   },
-  "llavadata": {
-    "file_name": "../llava/data.json",
+  "vlmdata": {
+    "file_name": "../vldata/data.json",
     "formatting": "sharegpt",
     "columns": {
       "messages": "messages",

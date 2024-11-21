@@ -1,10 +1,10 @@
 ### model
-model_name_or_path: /file/tian/models/llava-v1.6-vicuna-7b-hf
+model_name_or_path: /file/tian/models/Qwen2-VL-7B-Instruct
 
 ### dataset
-dataset: llavadata
+dataset: vlmdata
 dataset_dir: config
-template: llava_next
+template: qwen2_vl
 cutoff_len: 4096
 max_samples: 120000
 overwrite_cache: true
@@ -25,8 +25,8 @@ lora_target: all
 # deepspeed: config/ds_z3_config.json
 
 ### train
-per_device_train_batch_size: 8
-gradient_accumulation_steps: 4
+per_device_train_batch_size: 2
+gradient_accumulation_steps: 8
 learning_rate: 1.0e-4
 num_train_epochs: 3.0
 lr_scheduler_type: cosine
@@ -35,7 +35,7 @@ bf16: true
 ddp_timeout: 180000000
 
 ### eval
-# val_size: 0.1
-# per_device_eval_batch_size: 1
-# eval_strategy: steps
-# eval_steps: 500
+val_size: 0.1
+per_device_eval_batch_size: 1
+eval_strategy: steps
+eval_steps: 500
